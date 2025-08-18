@@ -1,0 +1,11 @@
+.env
+.venv/
+
+__pycache__
+*.pyc
+*.pyo
+
+.ruff_cache/
+
+alembic/versions/__pycache__
+.vscode/
