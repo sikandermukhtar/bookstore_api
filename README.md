@@ -55,6 +55,7 @@ poetry install --with dev
 
 - Create .env file in the project root
 - Edit .env with your own values.
+- Remove SYNC_DATABASE_URL and ASYNC_DATABASE_URL from .env and SQLite DB will initialize in root directory, otherwise add valid postgreSQL urls.
 
 Example .env:
 ```
