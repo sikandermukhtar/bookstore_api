@@ -13,6 +13,7 @@ from fastapi import (
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from database import get_db
 from models import User, VerificationToken
+from pydantic import EmailStr
 from sqlalchemy.orm import Session
 from utils.hashing import hash, authenticate_user
 from utils.token import create_access_token, generate_secret_token
@@ -157,3 +158,47 @@ def verify_user_by_token(token: str, db: Session = Depends(get_db)):
         )
 
     return {"message": "You are successfully verified."}
+
+@router.post("/resend-verification-token", response_model=dict[str, str])
+def resend_verification(email: EmailStr, background_tasks: BackgroundTasks, db:Session = Depends(get_db)):
+
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found!")
+    
+    if user.is_verified:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad request, already verified.")
+    
+    existing_token = db.query(VerificationToken).filter(VerificationToken.user_id == user.id).first()
+    if existing_token:
+        db.delete(existing_token)
+        db.flush()
+
+    verification_token = generate_secret_token()
+    new_token = VerificationToken(
+        token = verification_token,
+        user_id= user.id,
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=15),
+    )
+    message = MessageSchema(
+        subject="Prime Bookstore Verification",
+        recipients=[email],
+        body=f"Follow the following link for verification:\n"
+        + f"http://localhost:8000/auth/verify?token={verification_token}",
+        subtype=MessageType.html,
+    )
+    fm=FastMail(mail_config)
+    db.add(new_token)
+    try:
+        db.commit()
+        db.refresh(new_token)
+        db.refresh(user)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Intgerity error occured."
+        )
+
+    background_tasks.add_task(fm.send_message, message)
+    return {"message": "New token issued."}
