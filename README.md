@@ -1,6 +1,8 @@
 # Blog Platform API
 
 FastAPI Microservice for a Mini "Bookstore" API with Search, Authentication, and File Upload, for managing a simple bookstore inventory. The system should allow authenticated users to manage books, search for them, and upload a CSV file to bulk-insert books.
+User registration verification through email.
+User profile image and book cover images are being stored on ImageKit. 
 Package management is handled with **Poetry**.
 
 ```
