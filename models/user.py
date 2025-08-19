@@ -1,19 +1,14 @@
 from config import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, DateTime, Date, Float, text, func, Enum
+from sqlalchemy import String, DateTime, text, func, Boolean
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
-from datetime import datetime, date
-import enum
+from datetime import datetime
 from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
     from .book import Book
-
-
-class UserRole(enum.Enum):
-    admin = "admin"
-    user = "user"
+    from .verification_tokens import VerificationToken
 
 
 class User(Base):
@@ -26,12 +21,17 @@ class User(Base):
         nullable=False,
         default=uuid.uuid4,
     )
-    role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole, name="user_roles"), nullable=False, default=UserRole.user
+    role: Mapped[str] = mapped_column(
+        String(20), nullable=False, default=text("'user'")
     )
-    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    email: Mapped[str] = mapped_column(
+        String(255), unique=True, nullable=False, index=True
+    )
     password: Mapped[str] = mapped_column(String, nullable=False)
     profile_img_url: Mapped[str] = mapped_column(String, nullable=True)
+    is_verified: Mapped[bool] = mapped_column(
+        Boolean, server_default=text("'false'"), nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -44,4 +44,7 @@ class User(Base):
 
     books: Mapped[List["Book"]] = relationship(
         "Book", back_populates="owner", passive_deletes=True
+    )
+    verification_token: Mapped["VerificationToken"] = relationship(
+        "VerificationToken", back_populates="user"
     )

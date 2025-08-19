@@ -9,6 +9,7 @@ import os
 
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except Exception:
     pass
@@ -20,10 +21,14 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 from config.base import Base
+
 target_metadata = Base.metadata
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+pysqlite:///./blog_platform_api.db")
+DATABASE_URL = os.getenv(
+    "SYNC_DATABASE_URL", "sqlite+pysqlite:///./blog_platform_api.db"
+)
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -63,9 +68,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

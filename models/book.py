@@ -1,6 +1,6 @@
 from config import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, DateTime, Date, Float, text, func, ForeignKey
+from sqlalchemy import String, DateTime, Date, Float, func, ForeignKey
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime, date
@@ -23,6 +23,7 @@ class Book(Base):
     title: Mapped[str] = mapped_column(String(120), nullable=False)
     author: Mapped[str] = mapped_column(String(80), nullable=False)
     price: Mapped[float] = mapped_column(Float, nullable=False)
+    book_cover_image: Mapped[str] = mapped_column(String, nullable=True)
     published_date: Mapped[date] = mapped_column(Date, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

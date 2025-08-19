@@ -3,10 +3,18 @@ from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
 
 
-def hash_password(plain_password: str) -> str:
-    if not plain_password:
+def hash(plain: str) -> str:
+    if not plain:
         raise ValueError("Password cannot be empty.")
-    return pwd_context.hash(plain_password)
+    return pwd_context.hash(plain)
+
+
+def verify_hash(plain: str, hash: str) -> bool:
+    if not plain:
+        raise ValueError("Invalid hashing argument")
+    if not hash:
+        raise ValueError("Invalid hashing argument")
+    return pwd_context.verify(plain, hash)
 
 
 def authenticate_user(
