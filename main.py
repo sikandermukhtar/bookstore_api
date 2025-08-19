@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import models
+from config.base import Base
 from routes.auth import router as auth_router
 from routes.book import router as book_router
 from routes.user import router as user_router
@@ -9,6 +10,7 @@ from sqlalchemy import select
 from utils.hashing import hash
 from config.session import async_engine, sync_engine
 
+Base.metadata.create_all(bind=sync_engine)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
